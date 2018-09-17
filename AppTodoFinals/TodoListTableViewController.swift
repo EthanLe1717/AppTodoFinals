@@ -11,9 +11,17 @@ import UIKit
 class TodoListTableViewController: UITableViewController {
     
     var todoItemArray = ["Buy cake moon","Buy oil"," Buy water wash","Buy machines"]
+    
+    //save data in store
+    let defaults = UserDefaults.standard
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        //find data in library from array with dictionary has key "TodoListItems"
+        if let items = defaults.array(forKey: "TodoListItems") as? [String]{
+            todoItemArray = items
+        }
 
         // Uncomment the following line to preserve selection between presentations
         // self.clearsSelectionOnViewWillAppear = false
@@ -61,6 +69,9 @@ class TodoListTableViewController: UITableViewController {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
+    // MARK: - Add new item for todo list
+    
+    
     @IBAction func AddItemTodoListPress(_ sender: UIBarButtonItem) {
         
         var textFieldItemsAdd = UITextField()
@@ -68,6 +79,9 @@ class TodoListTableViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Items", style: .default) { (action) in
             self.todoItemArray.append(textFieldItemsAdd.text!)
+            
+            // save array data to Dictionary
+            self.defaults.set(self.todoItemArray, forKey: "TodoListItems")
             self.tableView.reloadData()
             
             
