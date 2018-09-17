@@ -12,35 +12,19 @@ class TodoListTableViewController: UITableViewController {
     
     var todoItemArray = [Item]()
     
-    //save data in store
-    let defaults = UserDefaults.standard
+    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+   
+    
+    
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        // loading data from library use encode and decode
+        // encoder : Mã hoá  chính nó thành 1dạng dữ liệu có thể sử dụng ở bên ngoaif(JSON,plist)
+        //decoder: Giải mã các dữ liệu bên ngoài thành dữ liệu sử dụng đc trong app.
+        loadItems()
         
-        let newItem = Item()
-        newItem.title = "Buy Milk"
-        todoItemArray.append(newItem)
-        
-        let newItem2 = Item()
-        newItem2.title = "Buy Cake"
-        todoItemArray.append(newItem2)
-        
-        let newItem3 = Item()
-        newItem3.title = "Buy Oil"
-        todoItemArray.append(newItem3)
-        
-        
-        //find data in library from array with dictionary has key "TodoListItems"
-        if let items = defaults.array(forKey: "TodoListItems") as? [Item]{
-            todoItemArray = items
-        }
-
-        // Uncomment the following line to preserve selection between presentations
-        // self.clearsSelectionOnViewWillAppear = false
-
-        // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-        // self.navigationItem.rightBarButtonItem = self.editButtonItem
     }
 
     override func didReceiveMemoryWarning() {
@@ -91,6 +75,8 @@ class TodoListTableViewController: UITableViewController {
             todoItemArray[indexPath.row].done = false
         }
         
+        saveItems()
+        
         tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
@@ -111,7 +97,7 @@ class TodoListTableViewController: UITableViewController {
             self.todoItemArray.append(newItems)
             
             // save array data to Dictionary
-            self.defaults.set(self.todoItemArray, forKey: "TodoListItems")
+            self.saveItems()
             self.tableView.reloadData()
             
             
@@ -124,50 +110,31 @@ class TodoListTableViewController: UITableViewController {
         alertController.addAction(action)
         present(alertController, animated: true, completion: nil)
     }
+    //MARK: Model Manupulation Method
+    func saveItems (){
+        let encoder = PropertyListEncoder()
+        do {
+            let data = try encoder.encode(todoItemArray)
+            try data.write(to: dataFilePath!)
+            
+        }catch {
+            print("Error encoding item array ,\(error)")
+            
+        }
+    }
     
-    /*
-    // Override to support conditional editing of the table view.
-    override func tableView(_ tableView: UITableView, canEditRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the specified item to be editable.
-        return true
+    func loadItems(){
+        if let data = try? Data(contentsOf: dataFilePath!){
+            let decoder = PropertyListDecoder()
+            do {
+                todoItemArray = try decoder.decode([Item].self, from: data)
+                
+            } catch{
+                print(error.localizedDescription)
+            }
+        }
+        
     }
-    */
-
-    /*
-    // Override to support editing the table view.
-    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCellEditingStyle, forRowAt indexPath: IndexPath) {
-        if editingStyle == .delete {
-            // Delete the row from the data source
-            tableView.deleteRows(at: [indexPath], with: .fade)
-        } else if editingStyle == .insert {
-            // Create a new instance of the appropriate class, insert it into the array, and add a new row to the table view
-        }    
-    }
-    */
-
-    /*
-    // Override to support rearranging the table view.
-    override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
-    }
-    */
-
-    /*
-    // Override to support conditional rearranging of the table view.
-    override func tableView(_ tableView: UITableView, canMoveRowAt indexPath: IndexPath) -> Bool {
-        // Return false if you do not want the item to be re-orderable.
-        return true
-    }
-    */
-
-    /*
-    // MARK: - Navigation
-
-    // In a storyboard-based application, you will often want to do a little preparation before navigation
-    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
-        // Get the new view controller using segue.destinationViewController.
-        // Pass the selected object to the new view controller.
-    }
-    */
 
 }
+
